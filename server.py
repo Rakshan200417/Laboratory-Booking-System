@@ -5,6 +5,7 @@ import sqlite3
 import os
 import urllib.parse
 from datetime import datetime
+import base64
 
 PORT = 5000
 WEB_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "frontend", "web"))
@@ -178,7 +179,7 @@ class LabReserveHandler(http.server.SimpleHTTPRequestHandler):
             elif path == "/api/laboratories":
                 cursor.execute("""
                     SELECT l.laboratory_id, l.laboratory_name, l.laboratory_code, l.location,
-                           l.capacity, l.description, l.status,
+                           l.capacity, l.description, l.status, l.image_url,
                            (SELECT COUNT(*) FROM LAB_EQUIPMENT e WHERE e.laboratory_id = l.laboratory_id) as equipment_count,
                            (SELECT b.purpose || ' (' || b.booking_date || ')' 
                             FROM BOOKINGS b 
@@ -432,11 +433,28 @@ class LabReserveHandler(http.server.SimpleHTTPRequestHandler):
                 cap = int(data.get("capacity", 25))
                 desc = data.get("description", "Laboratory facility")
                 status = data.get("status", "Available")
+                
+                img_data = data.get("image_data")
+                img_name = data.get("image_name")
+                img = data.get("image_url", "")
+                
+                if img_data and img_name:
+                    if "," in img_data:
+                        img_data = img_data.split(",")[1]
+                    try:
+                        decoded = base64.b64decode(img_data)
+                        safe_name = "".join([c for c in img_name if c.isalnum() or c=='.' or c=='_']).rstrip()
+                        filepath = os.path.join(WEB_DIR, "assets", "images", safe_name)
+                        with open(filepath, "wb") as f:
+                            f.write(decoded)
+                        img = f"assets/images/{safe_name}"
+                    except Exception as e:
+                        print("Error saving image:", e)
 
                 cursor.execute("""
-                    INSERT INTO LABORATORIES (laboratory_name, laboratory_code, location, capacity, description, status)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (name, code, loc, cap, desc, status))
+                    INSERT INTO LABORATORIES (laboratory_name, laboratory_code, location, capacity, description, status, image_url)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (name, code, loc, cap, desc, status, img))
                 conn.commit()
                 self._send_json({"success": True, "laboratory_id": cursor.lastrowid})
 
@@ -447,12 +465,35 @@ class LabReserveHandler(http.server.SimpleHTTPRequestHandler):
                 loc = data.get("location")
                 cap = int(data.get("capacity", 25))
                 status = data.get("status", "Available")
+                
+                img_data = data.get("image_data")
+                img_name = data.get("image_name")
+                
+                # Fetch existing image to fallback on
+                cursor.execute("SELECT image_url FROM LABORATORIES WHERE laboratory_id = ?", (lab_id,))
+                row = cursor.fetchone()
+                existing_img = row["image_url"] if row else ""
+                
+                img = data.get("image_url", existing_img)
+                
+                if img_data and img_name:
+                    if "," in img_data:
+                        img_data = img_data.split(",")[1]
+                    try:
+                        decoded = base64.b64decode(img_data)
+                        safe_name = "".join([c for c in img_name if c.isalnum() or c=='.' or c=='_']).rstrip()
+                        filepath = os.path.join(WEB_DIR, "assets", "images", safe_name)
+                        with open(filepath, "wb") as f:
+                            f.write(decoded)
+                        img = f"assets/images/{safe_name}"
+                    except Exception as e:
+                        print("Error saving image:", e)
 
                 cursor.execute("""
                     UPDATE LABORATORIES
-                    SET laboratory_name = ?, location = ?, capacity = ?, status = ?
+                    SET laboratory_name = ?, location = ?, capacity = ?, status = ?, image_url = ?
                     WHERE laboratory_id = ?
-                """, (name, loc, cap, status, lab_id))
+                """, (name, loc, cap, status, img, lab_id))
                 conn.commit()
                 self._send_json({"success": True, "message": f"Laboratory {name} updated!"})
 

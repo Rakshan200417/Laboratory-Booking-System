@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LabReserve — University Laboratory Booking and Management System</title>
+  <link rel="icon" type="image/jpeg" href="assets/images/favicon.jpg">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -27,13 +28,13 @@
       <form id="login-form" onsubmit="handleLoginSubmit(event)">
         <div class="form-group">
           <label for="login-id">University ID</label>
-          <input type="text" id="login-id" class="form-control" placeholder="Enter your university ID" value="ADMIN001" required>
+          <input type="text" id="login-id" class="form-control" placeholder="Enter your university ID" required>
         </div>
 
         <div class="form-group">
           <label for="login-password">Password</label>
           <div class="input-password-wrapper">
-            <input type="password" id="login-password" class="form-control" placeholder="............" value="admin123" required>
+            <input type="password" id="login-password" class="form-control" placeholder="............" required>
             <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility('login-password')">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -54,12 +55,7 @@
         <button type="submit" class="btn-primary-block">Sign In</button>
       </form>
 
-      <div class="login-quick-creds">
-        <span>Demo Quick Logins: </span>
-        <button type="button" class="btn-pagination" style="padding: 2px 6px; font-size: 11px;" onclick="fillLogin('ADMIN001', 'admin123')">Admin</button>
-        <button type="button" class="btn-pagination" style="padding: 2px 6px; font-size: 11px;" onclick="fillLogin('U-882103', 'pass123')">Dr. Chen</button>
-        <button type="button" class="btn-pagination" style="padding: 2px 6px; font-size: 11px;" onclick="fillLogin('249109', 'pass123')">Student</button>
-      </div>
+
     </div>
 
     <div class="login-footer-copy">
@@ -159,20 +155,9 @@
 
       <!-- User Profile at bottom of sidebar -->
       <div class="sidebar-footer">
-        <div class="user-profile-widget">
-          <div class="user-avatar-badge" id="sidebar-avatar">AD</div>
-          <div class="user-info">
-            <div class="user-info-name" id="sidebar-name">Admin User</div>
-            <div class="user-info-role" id="sidebar-role">System Administrator</div>
-          </div>
-          <button type="button" class="action-icon-btn" title="Sign out" onclick="event.stopPropagation(); handleLogout();" style="color: #94a3b8;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-          </button>
-        </div>
+        <button type="button" class="btn-primary-add" style="background-color: #ef4444; border-color: #ef4444; color: white; width: 100%; justify-content: center;" title="Sign out" onclick="event.stopPropagation(); handleLogout();">
+          Logout
+        </button>
       </div>
     </aside>
 
@@ -186,19 +171,13 @@
         </div>
 
         <div class="header-actions">
-          <div class="user-identity-chip">
-            <span id="header-user-badge" style="font-weight: 600;">Admin User</span>
-            <span style="color: #94a3b8;">•</span>
-            <span id="header-role-badge" style="font-weight: 600; color: #2563eb;">Administrator</span>
+          <div class="user-identity-chip" style="padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; gap: 10px; background: white;">
+            <div class="user-avatar-badge" id="header-avatar" style="width: 32px; height: 32px; font-size: 13px;">AD</div>
+            <div style="display: flex; flex-direction: column;">
+              <span id="header-user-badge" style="font-weight: 600; font-size: 14px; line-height: 1.2; color: #1e293b;">Admin User</span>
+              <span id="header-role-badge" style="font-size: 12px; color: #64748b; line-height: 1.2;">Administrator</span>
+            </div>
           </div>
-
-          <button type="button" class="icon-button icon-button-logout" onclick="handleLogout()" title="Log Out">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-          </button>
         </div>
       </header>
 
@@ -699,6 +678,14 @@
             </select>
           </div>
         </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Upload Image File</label>
+          <input type="file" id="add-lab-img-file" class="form-control" accept="image/*">
+        </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Or use Image URL</label>
+          <input type="text" id="add-lab-img-url" class="form-control" placeholder="https://example.com/image.jpg">
+        </div>
         <div class="modal-footer">
           <button type="button" class="btn-secondary" onclick="closeModal('modal-add-lab')">Cancel</button>
           <button type="submit" class="btn-primary-add">Add Facility</button>
@@ -843,6 +830,14 @@
               <option value="Maintenance">Maintenance</option>
             </select>
           </div>
+        </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Upload Image File</label>
+          <input type="file" id="edit-lab-img-file" class="form-control" accept="image/*">
+        </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Or use Image URL</label>
+          <input type="text" id="edit-lab-img-url" class="form-control" placeholder="https://example.com/image.jpg">
         </div>
         <div class="modal-footer">
           <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-lab')">Cancel</button>

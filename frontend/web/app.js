@@ -147,15 +147,14 @@ function handleLogout() {
 
 function updateUserWidget() {
   const u = state.currentUser;
-  // Sidebar widget
-  document.getElementById("sidebar-name").innerText = u.name;
-  document.getElementById("sidebar-role").innerText = u.role;
-  document.getElementById("sidebar-avatar").innerText = u.initials || u.name.slice(0, 2).toUpperCase();
 
   // Header chip
   document.getElementById("header-user-badge").innerText = u.name;
   const roleBadge = document.getElementById("header-role-badge");
   roleBadge.innerText = u.role;
+  
+  const avatar = document.getElementById("header-avatar");
+  if (avatar) avatar.innerText = u.initials || u.name.slice(0, 2).toUpperCase();
   if (u.role === "Administrator") {
     roleBadge.style.color = "#2563eb";
   } else if (u.role === "Faculty" || u.role === "Lecturer") {
@@ -415,6 +414,9 @@ function renderLaboratories(labs) {
     }
 
     card.innerHTML = `
+      <div style="margin: -20px -20px 15px -20px;">
+        <img src="${lab.image_url || 'assets/images/favicon.jpg'}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px 8px 0 0; display: block;">
+      </div>
       <div>
         <div class="lab-card-header">
           <div>
@@ -469,6 +471,8 @@ function openEditLabModal(labId) {
   document.getElementById("edit-lab-location").value = lab.location;
   document.getElementById("edit-lab-capacity").value = lab.capacity;
   document.getElementById("edit-lab-status").value = lab.status;
+  document.getElementById("edit-lab-img-file").value = "";
+  document.getElementById("edit-lab-img-url").value = lab.image_url || "";
 
   openModal("modal-edit-lab");
 }
@@ -480,12 +484,31 @@ async function handleUpdateLab(event) {
   const loc = document.getElementById("edit-lab-location").value.trim();
   const cap = document.getElementById("edit-lab-capacity").value;
   const status = document.getElementById("edit-lab-status").value;
+  const fileInput = document.getElementById("edit-lab-img-file");
+  const urlInput = document.getElementById("edit-lab-img-url").value.trim();
+  
+  let imgBase64 = "";
+  let imgName = "";
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    imgName = file.name;
+    try {
+      imgBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
 
   try {
     const res = await fetch(`${API_BASE}/laboratories/update`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ laboratory_id: id, name: name, location: loc, capacity: cap, status: status })
+      body: JSON.stringify({ laboratory_id: id, name: name, location: loc, capacity: cap, status: status, image_data: imgBase64, image_name: imgName, image_url: urlInput })
     });
     const data = await res.json();
     if (data.success) {
@@ -1084,12 +1107,31 @@ async function handleAddLab(event) {
   const loc = document.getElementById("add-lab-location").value.trim();
   const cap = document.getElementById("add-lab-capacity").value;
   const status = document.getElementById("add-lab-status").value;
+  const fileInput = document.getElementById("add-lab-img-file");
+  const urlInput = document.getElementById("add-lab-img-url").value.trim();
+  
+  let imgBase64 = "";
+  let imgName = "";
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    imgName = file.name;
+    try {
+      imgBase64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    } catch(e) {
+      console.error(e);
+    }
+  }
 
   try {
     const res = await fetch(`${API_BASE}/laboratories/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, location: loc, capacity: cap, status })
+      body: JSON.stringify({ name, location: loc, capacity: cap, status, image_data: imgBase64, image_name: imgName, image_url: urlInput })
     });
     const data = await res.json();
     if (data.success) {

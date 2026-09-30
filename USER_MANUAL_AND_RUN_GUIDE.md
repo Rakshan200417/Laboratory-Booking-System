@@ -42,7 +42,7 @@ python frontend/desktop/main.py
 ### Method C: Web Application Server
 1. Start the HTTP backend server:
    ```bash
-   python backend/app/server.py
+   python server.py
    ```
 2. Open your web browser at: `http://localhost:5000`
 
